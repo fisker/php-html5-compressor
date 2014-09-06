@@ -117,7 +117,7 @@ function singleElementParser($string){
 		);
 
 		if(isset($booleanAttrs[$tag]) 
-			&& strpos(' ' . $booleanAttrs[$tag] . ' ', $tag) !== FALSE){
+			&& strpos(' ' . $booleanAttrs[$tag] . ' ', $key) !== FALSE){
 			$value = NULL;
 		}
 
