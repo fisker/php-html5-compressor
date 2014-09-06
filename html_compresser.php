@@ -15,19 +15,19 @@ function compress_html($html){
 	$cache_special_tags_content = array();
 	foreach($special_tags as $tag){
 		if( preg_match_all('/<' . $tag . '(?:[^>]*?)>(.*?)<\/' . $tag . '>/is', $html, $matches) ){
-			$cache_special_tags_content[$tag] = $matches[1];
-			foreach($matches[1] as $index => $string){
-				$html = str_replace( $string , '[%~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~' . $tag .'~' . $index . '%]', $html );
+			$cache_special_tags_content[$tag] = $matches[0];
+			foreach($matches[0] as $index => $string){
+				$html = str_replace( $string , '<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~' . $tag .'~' . $index . '~~>', $html );
 			}
-
 		}
 	}
 
+
 	// CDATA
 	if( preg_match_all('/<!\[CDATA\[(.*?)\]\]>/s', $html, $matches) ){
-		$cache_special_tags_content['CDATA'] = $matches[1];
-		foreach($matches[1] as $index => $string){
-			$html = str_replace( $string , '[%~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~CDATA~' . $index . '%]', $html );
+		$cache_special_tags_content['CDATA'] = $matches[0];
+		foreach($matches[0] as $index => $string){
+			$html = str_replace( $string , '<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~CDATA~' . $index . '~~>', $html );
 		}
 	}
 
@@ -149,10 +149,11 @@ function compress_html($html){
 	$html = str_replace('> <', '><', $html);
 
 	// retore special tag
+	// TODO: remove new line after the special tag
 	foreach( $cache_special_tags_content as $tag => $content ){
 		foreach( $content as $index => $string ){
-			$string = trim($string, "\r\n\t");
-			$html = str_replace( '[%~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~' . $tag .'~' . $index . '%]', $string, $html );
+			//$string = trim($string, "\r\n\t");
+			$html = str_replace( '<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~' . $tag .'~' . $index . '~~>', $string, $html );
 		}
 	}
 

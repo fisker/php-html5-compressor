@@ -2,9 +2,11 @@
 date_default_timezone_set("Asia/Shanghai");
 mb_internal_encoding("UTF-8");
 require_once('html_compresser.php');
-ob_start('compress_html');
+//ob_start('compress_html');
 
 $demos = array();
+
+
 
 
 
