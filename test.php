@@ -93,6 +93,12 @@ $demos[] = array(
 	'<script type=\'text/javascript\' >',
 );
 
+
+$demos[] = array(
+	'attributes with boolean type value',
+	'<video controls="controls"><video controls=controls><video controls><video controls="true"><video controls="false"><input checked="whatever">',
+);
+
 $demos[] = array(
 	' broken attributes',
 	'<a href="google>',

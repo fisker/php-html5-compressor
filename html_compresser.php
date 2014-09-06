@@ -1,4 +1,7 @@
 <?php
+//is html 5  
+//<!DOCTYPE html>
+
 function singleElementParser($string){
 	if( !preg_match('/^<(.*?)>$/', $string) ){
 		return '';
@@ -69,6 +72,11 @@ function singleElementParser($string){
 			'style' => array(
 				'type' => 'text/css',
 			),
+			'form' => array(
+			//	'method' => 'get',
+			),
+
+			//link rel="stylesheet" type="text/css"
 		);
 
 		if(isset($deafultAttributes[$tag]) 
@@ -77,6 +85,42 @@ function singleElementParser($string){
 			continue;
 			//unset($attrs[$attrs]);
 		}
+
+		$booleanAttrs = array(
+			'audio' => 'autoplay controls loop muted',
+			'button' => 'autofocus disabled formnovalidate', //formnovalidate Only for type="submit"
+			'details' => 'open',
+			'dir' => 'compact',
+			'fieldset' => 'disabled',
+			'form' => 'novalidate',
+			'frame' => 'noresize', //?
+			'hr' => 'noshade',
+			'iframe' => 'seamless',
+			'img' => 'ismap',
+			'input' => 'autofocus checked disabled formnovalidate multiple readonly required',
+			'keygen' => 'autofocus challenge disabled',
+			'menuitem' => 'checked default disabled',
+			'object' => 'declare',
+			'ol' => 'compact reversed',
+			'optgroup' => 'disabled',
+			'option' => 'disabled selected',
+			'script' => 'async defer',
+			'select' => 'autofocus disabled multiple required',
+			'style' => 'scoped',
+			'table' => 'sortable',
+			'td' => 'nowrap',
+			'textarea' => 'autofocus disabled readonly required',
+			'th' => 'nowrap',
+			'track' => 'default',
+			'ul' => 'compact',
+			'video' => 'autoplay controls loop muted', //same as audio	
+		);
+
+		if(isset($booleanAttrs[$tag]) 
+			&& strpos(' ' . $booleanAttrs[$tag] . ' ', $tag) !== FALSE){
+			$value = NULL;
+		}
+
 
 		if( is_null($value) ){
 			$attrArray[] = $key;
