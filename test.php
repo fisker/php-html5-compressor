@@ -20,13 +20,15 @@ $s = <<<eot
 		alert('hello world.');
 		alert('another line with special character <>\'"&nbsp;.');
 	});
-})(jQUery);
+})(jQuery);
 </script>
 eot;
 $demos[] = array(
 	'inline pre code text area CDATA',
 	$s
 );
+
+
 
 $s = <<<eot
 <!--
@@ -42,6 +44,8 @@ $demos[] = array(
 );
 
 
+
+
 $demos[] = array(
 	'whitespace',
 	"\\r:\r , \\n: \n, \\t : \t, \\f : \f, whitespace\r\n\t\f &nbsp; \n a long white space'                 '"
@@ -53,7 +57,7 @@ $demos[] = array(
 );
 
 $demos[] = array(
-	'attribute and value contains whitespace (will be fixed next version)',
+	'attribute and value contains whitespace',
 	'<a href = "http://google.com">test</a>'
 );
 
@@ -96,6 +100,11 @@ $demos[] = array(
 $demos[] = array(
 	' broken attributes2',
 	'<a href="google\'>',
+);
+
+$demos[] = array(
+	'empty element',
+	'<>',
 );
 
 

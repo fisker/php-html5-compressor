@@ -1,4 +1,98 @@
 <?php
+function singleElementParser($string){
+	if( !preg_match('/^<(.*?)>$/', $string) ){
+		return '';
+	}
+	$string = substr($string, 1, -1);
+
+	//remove self close tag /
+	$string = rtrim($string, '/');
+	$postionWhitespace = strpos($string . ' ', ' ');
+	$tag = substr($string, 0, $postionWhitespace);
+	if(!$tag){
+		return '';
+	}
+	$tag = strtolower($tag);
+	$isCloseTag = substr($tag, 0, 1) === '/';
+
+	$string = substr($string, $postionWhitespace);
+	$string = trim($string);
+
+	$attrs = array();
+	while(!$isCloseTag && $string){
+		$string = trim($string);
+
+		//find attributeName
+		$attrNameEndPostion = min(
+			strpos($string . '=', '='), 
+			strpos($string . ' ', ' ')
+			);
+
+
+		$key = substr($string, 0, $attrNameEndPostion);
+		$key = strtolower($key);
+		$string = trim(substr($string, $attrNameEndPostion));
+		if(substr($string.' ', 0, 1) !== '='){
+			$value = NULL;
+		}else{
+			$string = substr($string, 1);
+			$string = trim($string);
+			$firstCharacter = substr($string, 0, 1);
+			if($firstCharacter === '"' || $firstCharacter === '\''){
+				$posStart = 1;
+				$posEnd = strpos($string, $firstCharacter, 1);
+			}else{
+				$posStart = 0;
+				$posEnd = strpos($string . ' ', ' ');
+			}
+
+			// broken attribute value
+			// we can break the loop or try to fix it
+			if( $posEnd === FALSE ){
+				break;
+				//$posEnd = strlen($string);
+			}
+
+			$value = substr($string, $posStart, $posEnd - $posStart );
+			$string = trim(substr($string, $posEnd + $posStart));
+		}
+
+		$attrs[$key] = $value;
+	}
+
+	$attrArray = array();
+	foreach($attrs as $key => $value){
+		$deafultAttributes = array(
+			'script' => array(
+				'type' => 'text/javascript',
+			),
+			'style' => array(
+				'type' => 'text/css',
+			),
+		);
+
+		if(isset($deafultAttributes[$tag]) 
+			&& isset($deafultAttributes[$tag][$key])
+			&& $deafultAttributes[$tag][$key] === $value){
+			continue;
+			//unset($attrs[$attrs]);
+		}
+
+		if( is_null($value) ){
+			$attrArray[] = $key;
+		}elseif( strpos($value, '"') !== FALSE ){
+			$attrArray[] = $key . '=\'' . $value . '\'';
+		}else{
+			$attrArray[] = $key . '="' . $value . '"';
+		}
+	}
+
+
+					
+	return '<' . $tag . (empty($attrArray) ? '' : ' ' . implode(' ', $attrArray)) . '>';
+}
+
+
 
 
 function compress_html($html){
@@ -45,88 +139,11 @@ function compress_html($html){
 	if(preg_match_all('/<[^!][^>]+>/', $html, $matches)){
 		$pieces = $matches[0];
 		$pieces = array_unique($pieces);
-		sort($pieces);
+		//sort($pieces);
 
 		$fixedPieces = array();
 		foreach($pieces as $original){
-			$fixed = $original;
-
-			preg_match('/^<([\S]+)(.*?)?>$/', $original, $m);
-
-			$tag = strtolower($m[1]);
-			$attrString = trim($m[2]);
-			//remove self close tag /
-			$attrString = trim($attrString, '/');
-
-			// remove blank in close tags
-			// http://www.w3.org/TR/2014/CR-html5-20140731/syntax.html#end-tags
-			// 8.1.2.2 End tags
-			if( substr($tag, 0, 1) == '/' ){
-				$fixed = '<' . $tag . '>';
-			}else{
-				$attrs = array();
-				while( $attrString ){
-					$attrString = trim($attrString) . ' ';
-					$foundAttr = FALSE;
-					foreach(array(
-						'EMPTY' => '/^([^=|\s|\"|\']+)\s/',  //Empty attribute syntax
-						'UNQUOTED' => '/^([^=|\s]+)=([^=|\s|\"|\']+)\s/', //Unquoted attribute value syntax
-						'S-QUOTED' => '/^([^=|\s]+)=\'(.*?)\'\s/', //Single-quoted attribute value syntax
-						'D-QUOTED' => '/^([^=|\s]+)=\"(.*?)\"\s/', //Double-quoted attribute value syntax
-					) as $style => $preg ){
-						if( preg_match($preg, $attrString, $m) ){
-							$key = 	strtolower($m[1]);
-							$attrs[$key] = array(
-								'style' => $style,
-								'value' => isset($m[2]) ? $m[2] : NULL,
-							);
-							$attrString = substr($attrString, strlen($m[0]));
-							$foundAttr = TRUE;
-						}
-					}
-					if(!trim($attrString) || !$foundAttr){
-						break;
-					}
-				}
-
-
-
-				$attrArray = array();
-				foreach($attrs as $key => $attr){
-					$style = $attr['style'];
-					$value = $attr['value'];
-
-					$deafultAttributes = array(
-						'script' => array(
-							'type' => 'text/javascript',
-						),
-						'style' => array(
-							'type' => 'text/css',
-						),
-					);
-
-					if(isset($deafultAttributes[$tag]) 
-						&& isset($deafultAttributes[$tag][$key])
-						&& $deafultAttributes[$tag][$key] === $value){
-						continue;
-						//unset($attrs[$attrs]);
-					}
-
-					if($style == 'S-QUOTED' && strpos($value, '"') === FALSE){
-						$style = 'D-QUOTED';
-					}
-					if($style == 'EMPTY'){
-						$attrArray[] = $key;
-					}elseif($style == 'UNQUOTED' || $style == 'D-QUOTED'){
-						//Unquoted attribute add double-quote mark 
-						$attrArray[] = $key . '="' . $value . '"';
-					}elseif($style == 'S-QUOTED'){
-						$attrArray[] = $key . '=\'' . $value . '\'';
-					}
-				}
-
-				$fixed = '<' . $tag . (empty($attrArray) ? '' : ' ' . implode(' ', $attrArray)) . '>';
-			}
+			$fixed = singleElementParser($original);
 
 			if($fixed != $original){
 				$fixedPieces[$original] = $fixed;
@@ -158,7 +175,7 @@ function compress_html($html){
 				$string = preg_replace_callback(
 					'/^(<' . $tag . '(?:[^>]*?)>)(.*?)(<\/' . $tag . '>)$/is',
 					function($matches){
-						return $matches[1] . trim($matches[2]) . $matches[3];
+						return singleElementParser($matches[1]) . trim($matches[2]) . singleElementParser($matches[3]);
 					}, 
 					$string);
 				//$string = trim($string, "\r\n\t");
