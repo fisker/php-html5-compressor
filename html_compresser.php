@@ -116,6 +116,11 @@ function singleElementParser($string){
 			'video' => 'autoplay controls loop muted', //same as audio	
 		);
 
+		//global boolean attribute
+		if($key == 'hidden'){
+			$value = NULL;
+		}
+
 		if(isset($booleanAttrs[$tag]) 
 			&& strpos(' ' . $booleanAttrs[$tag] . ' ', $key) !== FALSE){
 			$value = NULL;
