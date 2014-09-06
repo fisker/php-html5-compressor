@@ -2,11 +2,14 @@
 date_default_timezone_set("Asia/Shanghai");
 mb_internal_encoding("UTF-8");
 require_once('html_compresser.php');
-//ob_start('compress_html');
+ob_start('compress_html');
 
 $demos = array();
 
-
+//$html = file_get_contents('http://www.163.com');
+//$html = iconv('gbk','utf-8',$html);
+//print_r(compress_html($html));
+//exit;
 
 
 
@@ -47,6 +50,11 @@ $demos[] = array(
 $demos[] = array(
 	'useful whitespace',
 	'fisker &nbsp; cheung<a href="">my homepage</a>&nbsp;<img src="path"> <a href="">another without a space before this element</a>'
+);
+
+$demos[] = array(
+	'attribute and value contains whitespace (will be fixed next version)',
+	'<a href = "http://google.com">test</a>'
 );
 
 
@@ -134,7 +142,7 @@ $urls = array(
 	['http://www.baidu.com/s?wd=fisker'],
 	['http://www.baidu.com/s?wd=html%20compresser'],
 	['https://github.com/fisker/php-html5-compresser'],
-	['http://www.163.com/','gbk'],
+	//['http://www.163.com/','gbk'],
 	['http://www.taobao.com/','gbk'],
 );
 $url = $urls[rand(0,count($urls)-1)];

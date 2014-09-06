@@ -1,12 +1,14 @@
 <?php
+
+
 function compress_html($html){
 	// a guid to avoid mistake replace
 	$guid = md5(time() . rand());
 
 	// cache special tag
 	$special_tags = array(
-		'pre',
 		'code',
+		'pre',
 		'script',
 		'style',
 		'textarea',
@@ -150,10 +152,18 @@ function compress_html($html){
 
 	// retore special tag
 	// TODO: remove new line after the special tag
-	foreach( $cache_special_tags_content as $tag => $content ){
-		foreach( $content as $index => $string ){
-			//$string = trim($string, "\r\n\t");
-			$html = str_replace( '<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~' . $tag .'~' . $index . '~~>', $string, $html );
+	while(preg_match('/<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~/', $html)){
+		foreach( $cache_special_tags_content as $tag => $content ){
+			foreach( $content as $index => $string ){
+				$string = preg_replace_callback(
+					'/^(<' . $tag . '(?:[^>]*?)>)(.*?)(<\/' . $tag . '>)$/is',
+					function($matches){
+						return $matches[1] . trim($matches[2]) . $matches[3];
+					}, 
+					$string);
+				//$string = trim($string, "\r\n\t");
+				$html = str_replace( '<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~' . $tag .'~' . $index . '~~>', $string, $html );
+			}
 		}
 	}
 
