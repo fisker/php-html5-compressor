@@ -2,6 +2,12 @@
 //is html 5  
 //<!DOCTYPE html>
 
+$html = '<input type="hidden" value="unknown" id="J_AliIntranet" >';
+
+
+echo(singleElementParser($html));
+exit;
+
 function singleElementParser($string){
 	if( !preg_match('/^<(.*?)>$/', $string) ){
 		return '';
@@ -122,7 +128,7 @@ function singleElementParser($string){
 		}
 
 		if(isset($booleanAttrs[$tag]) 
-			&& strpos(' ' . $booleanAttrs[$tag] . ' ', $key) !== FALSE){
+			&& in_array($key, explode(' ', $booleanAttrs[$tag]))){
 			$value = NULL;
 		}
 
@@ -214,7 +220,10 @@ function compress_html($html){
 	$html = preg_replace('/\s+/', ' ', $html);
 
 	// remove whitespace between tags
-	$html = str_replace('> <', '><', $html);
+	//$html = str_replace('> <', '><', $html);
+	// remove whitespace near html tags
+	$html = str_replace('> ', '>', $html);
+	$html = str_replace(' <', '<', $html);
 
 	// retore special tag
 	// TODO: remove new line after the special tag

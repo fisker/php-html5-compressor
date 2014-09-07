@@ -43,6 +43,17 @@ $demos[] = array(
 	$s
 );
 
+$s = <<<eot
+<script type="text/javascript">
+    document.domain="qq.com";//要浮层登陆必须把domain指定qq.com
+</script>
+eot;
+
+
+$demos[] = array(
+	'scripts with comment',
+	$s
+);
 
 
 
@@ -100,6 +111,11 @@ $demos[] = array(
 );
 
 $demos[] = array(
+	' typo attributes',
+	'<a href = http://google.com">test</a>',
+);
+
+$demos[] = array(
 	' broken attributes',
 	'<a href="google>',
 );
@@ -114,12 +130,19 @@ $demos[] = array(
 );
 
 
+$demos[] = array(
+	'multiple lines(new version will remove whitespace)',
+	"\t<title>\n\t\tthis is a title\n\t</title>",
+);
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>a php compresser to compress html</title>
+<title>
+	a php compresser to compress html
+</title>
 <link href="http://cdn.staticfile.org/twitter-bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
 <link href="http://getbootstrap.com/assets/css/docs.min.css" rel="stylesheet">
 
