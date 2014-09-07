@@ -1,4 +1,4 @@
-php-html5-compresser
+php-html5-compressor
 ====================
 
-a php compresser to compress html
+a php compressor to compress html
