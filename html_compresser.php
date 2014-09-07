@@ -2,11 +2,6 @@
 //is html 5  
 //<!DOCTYPE html>
 
-$html = '<input type="hidden" value="unknown" id="J_AliIntranet" >';
-
-
-echo(singleElementParser($html));
-exit;
 
 function singleElementParser($string){
 	if( !preg_match('/^<(.*?)>$/', $string) ){
