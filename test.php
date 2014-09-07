@@ -11,6 +11,14 @@ $demos = array();
 //print_r(compress_html($html));
 //exit;
 
+	$urls = array(
+		['http://www.baidu.com/'],
+		['http://www.baidu.com/s?wd=fisker'],
+		['http://www.baidu.com/s?wd=html%20compresser'],
+		['https://github.com/fisker/php-html5-compresser'],
+		//['http://www.163.com/','gbk'],
+		['http://www.taobao.com/','gbk'],
+	);
 
 
 $s = <<<eot
@@ -45,7 +53,7 @@ $demos[] = array(
 
 $s = <<<eot
 <script type="text/javascript">
-    document.domain="qq.com";//要浮层登陆必须把domain指定qq.com
+    var fisker = 'jerk';//this is a javescript comment
 </script>
 eot;
 
@@ -144,72 +152,89 @@ $demos[] = array(
 	a php compresser to compress html
 </title>
 <link href="http://cdn.staticfile.org/twitter-bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
-<link href="http://getbootstrap.com/assets/css/docs.min.css" rel="stylesheet">
 
-<script src="http://cdn.staticfile.org/prettify/r298/run_prettify.min.js"></script>
+<script src="http://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+<script src="http://cdn.staticfile.org/prettify/r298/prettify.min.js"></script>
 
+<script>
+	$(document).ready(prettyPrint);
+</script>
+<style>
+.com { color: #93a1a1; }
+.lit { color: #195f91; }
+.pun, .opn, .clo { color: #93a1a1; }
+.fun { color: #dc322f; }
+.str, .atv { color: #D14; }
+.kwd, .linenums .tag { color: #1e347b; }
+.typ, .atn, .dec, .var { color: teal; }
+.pln { color: #48484c; }
+
+.prettyprint {
+padding: 8px;
+background-color: #f7f7f9;
+border: 1px solid #e1e1e8;
+}
+.prettyprint.linenums {
+-webkit-box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+-moz-box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+box-shadow: inset 40px 0 0 #fbfbfc, inset 41px 0 0 #ececf0;
+}
+
+/* Specify class=linenums on a pre to get line numbering */
+ol.linenums li {
+padding-left: 12px;
+color: #bebec5;
+line-height: 18px;
+text-shadow: 0 1px 0 #fff;
+}
+</style>
 
 </head>
 <body>
+<?if(isset($_GET['real'])){?>
+	<?
 
-<div class="container">
-<?foreach($demos as $s){?>
-<div class="panel panel-default">
-<div class="panel-heading">
-<?=$s[0]?>
-</div>
-<div class="panel-body">
-	<pre class="prettyprint">
-	<code class="lang-html html"><?=htmlspecialchars($s[1])?></code>
-	</pre>
-	<pre class="prettyprint">
-	<code class="lang-html html"><?=htmlspecialchars(compress_html($s[1]))?></code>
-	</pre>
-</div>
-</div>
+	$url = $urls[rand(0,count($urls)-1)];
+	$c = isset($url[1]) ? $url[1] : '';
+	$url = $url[0];
+	$code = file_get_contents($url);
+	if($c){
+		$code = iconv($c,'utf-8',file_get_contents($url));
+	}
+	$code2 = compress_html($code);
+	?>
+
+	<div class="container">
+	<h1>a real time page <?=$url?></h1>
+	<p class="well">
+		original length : <?=strlen($code)?> , compressed length : <?=strlen($code2)?>, saved : <?=ceil((strlen($code)-strlen($code2))/strlen($code) * 10000)/100?>%
+
+	</p>
+	<div class="col-lg-6 col-md-6 col-sm-6 col-sx-6">
+		<pre class="prettyprint linenums"><code class="lang-html"><?=htmlspecialchars($code)?></code></pre>
+	</div>
+	<div class="col-lg-6 col-md-6 col-sm-6 col-sx-6">
+		<pre class="prettyprint linenums"><code class="lang-html"><?=htmlspecialchars($code2)?></code></pre>
+	</div>
+	</div>
+<?}else{?>
+	<div class="container">
+	<?foreach($demos as $s){?>
+	<div class="panel panel-default">
+	<div class="panel-heading">
+	<?=$s[0]?>
+	</div>
+	<div class="panel-body">
+		<pre class="prettyprint linenums"><code class="lang-html"><?=htmlspecialchars($s[1])?></code></pre>
+		<pre class="prettyprint linenums"><code class="lang-html"><?=htmlspecialchars(compress_html($s[1]))?></code></pre>
+	</div>
+	</div>
+	<?}?>
+
+	<a href="?real" class="btn btn-primary btn-lg btn-block">realtime page example</a>
+	</div>
 <?}?>
 
-
-
-
-</div>
-
-<?
-$urls = array(
-	['http://www.baidu.com/'],
-	['http://www.baidu.com/s?wd=fisker'],
-	['http://www.baidu.com/s?wd=html%20compresser'],
-	['https://github.com/fisker/php-html5-compresser'],
-	//['http://www.163.com/','gbk'],
-	['http://www.taobao.com/','gbk'],
-);
-$url = $urls[rand(0,count($urls)-1)];
-$c = isset($url[1]) ? $url[1] : '';
-$url = $url[0];
-$code = file_get_contents($url);
-if($c){
-	$code = iconv($c,'utf-8',file_get_contents($url));
-}
-$code2 = compress_html($code);
-?>
-
-<div class="container">
-<h1>a real time page <?=$url?></h1>
-<p class="well">
-	original length : <?=strlen($code)?> , compressed length : <?=strlen($code2)?>, saved : <?=ceil((strlen($code)-strlen($code2))/strlen($code) * 10000)/100?>%
-
-</p>
-<div class="col-lg-6 col-md-6 col-sm-6 col-sx-6">
-	<pre class="prettyprint">
-	<code class="lang-html html"><?=htmlspecialchars($code)?></code>
-	</pre>
-</div>
-<div class="col-lg-6 col-md-6 col-sm-6 col-sx-6">
-	<pre class="prettyprint">
-	<code class="lang-html html"><?=htmlspecialchars($code2)?></code>
-	</pre>
-</div>
-</div>
 
 </body>
 </html>

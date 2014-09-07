@@ -1,6 +1,8 @@
 <?php
 //is html 5  
 //<!DOCTYPE html>
+//fragments
+
 
 
 function singleElementParser($string){
@@ -69,12 +71,23 @@ function singleElementParser($string){
 		$deafultAttributes = array(
 			'script' => array(
 				'type' => 'text/javascript',
+				'language' => 'javascript',
+				//no src charset is useless
 			),
 			'style' => array(
 				'type' => 'text/css',
 			),
+			'link' => array(
+				'type' => 'text/css',
+			),
 			'form' => array(
-			//	'method' => 'get',
+				'method' => 'get',
+			),
+			'input' => array(
+				'type' => 'text',
+			),
+			'area' => array(
+				'shape' => 'rect',
 			),
 
 			//link rel="stylesheet" type="text/css"
@@ -117,6 +130,8 @@ function singleElementParser($string){
 			'video' => 'autoplay controls loop muted', //same as audio	
 		);
 
+		//(/^(?:allowfullscreen|async|autofocus|autoplay|checked|compact|controls|declare|default|defaultchecked|defaultmuted|defaultselected|defer|disabled|enabled|formnovalidate|hidden|indeterminate|inert|ismap|itemscope|loop|multiple|muted|nohref|noresize|noshade|novalidate|nowrap|open|pauseonexit|readonly|required|reversed|scoped|seamless|selected|sortable|spellcheck|truespeed|typemustmatch|visible)$/i).test(attrName);
+
 		//global boolean attribute
 		if($key == 'hidden'){
 			$value = NULL;
@@ -141,6 +156,7 @@ function singleElementParser($string){
 					
 	return '<' . $tag . (empty($attrArray) ? '' : ' ' . implode(' ', $attrArray)) . '>';
 }
+
 
 
 
@@ -205,8 +221,9 @@ function compress_html($html){
 		// http://www.w3.org/TR/html5/single-page.html#syntax-attributes
 		// section 8.1.2.4 Optional tags
 
+		$html = str_replace(array_keys($fixedPieces), array_values($fixedPieces),$html);
 
-		$html = strtr($html, $fixedPieces);
+		
 
 	}
 
@@ -225,13 +242,39 @@ function compress_html($html){
 	while(preg_match('/<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~/', $html)){
 		foreach( $cache_special_tags_content as $tag => $content ){
 			foreach( $content as $index => $string ){
-				$string = preg_replace_callback(
-					'/^(<' . $tag . '(?:[^>]*?)>)(.*?)(<\/' . $tag . '>)$/is',
-					function($matches){
-						return singleElementParser($matches[1]) . trim($matches[2]) . singleElementParser($matches[3]);
-					}, 
-					$string);
-				//$string = trim($string, "\r\n\t");
+				//inner content in code/pre should not be trimed
+				if($tag === 'style'){
+					$string = preg_replace_callback(
+						'/^(<' . $tag . '(?:[^>]*?)>)(.*?)(<\/' . $tag . '>)$/is',
+						function($matches){
+							return singleElementParser($matches[1]) . 
+								compress_css($matches[2]). 
+								singleElementParser($matches[3]);
+						}, 
+						$string);
+				}elseif( $tag === 'code' || $tag === 'pre' || $tag === 'textarea' ){
+					// http://www.w3.org/TR/html5/single-page.html
+					// 8.4 Parsing HTML fragments 
+					// textarea is RCDATA,  code/pre re PLAINTEXT
+
+					$string = preg_replace_callback(
+						'/^(<' . $tag . '(?:[^>]*?)>)(.*?)(<\/' . $tag . '>)$/is',
+						function($matches){
+							return singleElementParser($matches[1]) . 
+								compressPlainText($matches[2]). 
+								singleElementParser($matches[3]);
+						}, 
+						$string);
+				}else{
+					$string = preg_replace_callback(
+						'/^(<' . $tag . '(?:[^>]*?)>)(.*?)(<\/' . $tag . '>)$/is',
+						function($matches){
+							return singleElementParser($matches[1]) . 
+								trim($matches[2]). 
+								singleElementParser($matches[3]);
+						}, 
+						$string);
+				}
 				$html = str_replace( '<!~~HTML~COMPRESS~PLACEHOLDER~' . $guid .'~' . $tag .'~' . $index . '~~>', $string, $html );
 			}
 		}
@@ -239,3 +282,63 @@ function compress_html($html){
 
 	return $html;
 }
+
+function compressPlainText($s){
+	//return preg_replace('/\t/','&#9;', $s);
+
+	// "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).
+	return str_replace(array("\t","\n","\f","\r"), array('&Tab;','&NewLine;','',''), $s);
+
+	//return str_replace(array("\t","\n","\f","\r"), array('&#9;','&#10;','',''), $s);
+}
+
+
+/*
+	Name: PHP CSS Compressor.
+	Description: A simple PHP functions that compress css codes
+	Version : 1.00
+	Author: Linesh Jose
+	Url: http://lineshjose.com
+	Email: lineshjose@gmail.com
+	Donate:  http://bit.ly/donate-linesh
+	github: https://github.com/lineshjose
+	Demo: http://lineshjose.com/blog/how-to-create-a-simple-css-compressor-using-php/
+	Copyright: Copyright (c) 2012 LineshJose.com
+	
+	Note: This script is free; you can redistribute it and/or modify  it under the terms of the GNU General Public License as published by 	the Free Software Foundation; either version 2 of the License, or (at your option) any later version.This script is distributed in the hope 	that it will be useful,    but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the  GNU General Public License for more details.
+
+----------------------------------------------------------------------------------------------------------------------
+
+	This function returns compressed css codes
+	@param $css_codes : CSS Code
+*/
+
+// Compress CSS function
+function compress_css($css_codes)
+{		
+	$buffer =$css_codes;
+	// Remove comments
+	$buffer = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $buffer);
+	
+	// Remove whitespace
+	$buffer = str_replace(': ', ':', $buffer);
+	$buffer = str_replace(' :', ':', $buffer);
+	$buffer = str_replace(' ;', ';', $buffer);
+	$buffer = str_replace('; ', ';', $buffer);
+	$buffer = str_replace('{ ', '{', $buffer);
+	$buffer = str_replace(' {', '{', $buffer);
+	$buffer = str_replace('} ', '}', $buffer);
+	$buffer = str_replace(' }', '}', $buffer);
+	$buffer = str_replace(' ,', ',', $buffer);
+	$buffer = str_replace(', ', ',', $buffer);
+	$buffer = str_replace('  .', ' .', $buffer);
+	$buffer = str_replace(array("\r\n", "\r", "\n", "\t"), '', $buffer);
+	$buffer = str_replace(array('   ', '  '), ' ', $buffer);
+	return	 $buffer;
+}
+
+//yui css compressor
+//https://github.com/yui/yuicompressor/blob/master/src/com/yahoo/platform/yui/compressor/CssCompressor.java
+
+//clean css
+//https://github.com/jakubpawlowicz/clean-css
