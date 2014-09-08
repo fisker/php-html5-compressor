@@ -284,7 +284,8 @@ function compress_html($html){
 function html_encode($s){
 	return str_replace(
 		array("\t", "\n", "\f", "\r"),
-		array('&Tab;','&NewLine;','&#12;','&#13;'),
+		//array('&Tab;','&NewLine;','&#12;','&#13;'),
+		array('&#9;','&#10;','&#12;','&#13;'),
 		$s
 	);
 
@@ -293,10 +294,11 @@ function html_encode($s){
 
 
 function compressPlainText($s){
+	return str_replace("\n", array('&#10;'), $s);
 	//return preg_replace('/\t/','&#9;', $s);
 
 	// "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).
-	return str_replace(array("\t","\n","\f","\r"), array('&Tab;','&NewLine;','',''), $s);
+	//return str_replace(array("\t","\n","\f","\r"), array('&Tab;','&NewLine;','',''), $s);
 
 	//return str_replace(array("\t","\n","\f","\r"), array('&#9;','&#10;','',''), $s);
 }
