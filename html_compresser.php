@@ -6,7 +6,7 @@
 
 
 function singleElementParser($string){
-	if( !preg_match('/^<(.*?)>$/', $string) ){
+	if( !preg_match('/^<(.*?)>$/s', $string) ){
 		return '';
 	}
 	$string = substr($string, 1, -1);
@@ -146,9 +146,9 @@ function singleElementParser($string){
 		if( is_null($value) ){
 			$attrArray[] = $key;
 		}elseif( strpos($value, '"') !== FALSE ){
-			$attrArray[] = $key . '=\'' . $value . '\'';
+			$attrArray[] = $key . '=\'' . html_encode($value) . '\'';
 		}else{
-			$attrArray[] = $key . '="' . $value . '"';
+			$attrArray[] = $key . '="' . html_encode($value) . '"';
 		}
 	}
 
@@ -196,13 +196,8 @@ function compress_html($html){
 	// remove comment tag
 	$html = preg_replace('/<!--[^\[].*?-->/s', '', $html);
 
-	// replace all space characters to U+0020 SPACE,
-	// "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).
-	$html = preg_replace('/\t|\n|\f|\r/', ' ', $html);
-
-
 	// get all tags
-	if(preg_match_all('/<[^!][^>]+>/', $html, $matches)){
+	if(preg_match_all('/<[^!][^>]+>/s', $html, $matches)){
 		$pieces = $matches[0];
 		$pieces = array_unique($pieces);
 		//sort($pieces);
@@ -223,9 +218,11 @@ function compress_html($html){
 
 		$html = str_replace(array_keys($fixedPieces), array_values($fixedPieces),$html);
 
-		
-
 	}
+
+	// replace all space characters to U+0020 SPACE,
+	// "tab" (U+0009), "LF" (U+000A), "FF" (U+000C), and "CR" (U+000D).
+	$html = preg_replace('/\t|\n|\f|\r/', ' ', $html);
 
 	// remove whitespace
 	$html = trim($html);
@@ -282,6 +279,18 @@ function compress_html($html){
 
 	return $html;
 }
+
+
+function html_encode($s){
+	return str_replace(
+		array("\t", "\n", "\f", "\r"),
+		array('&Tab;','&NewLine;','&#12;','&#13;'),
+		$s
+	);
+
+}
+
+
 
 function compressPlainText($s){
 	//return preg_replace('/\t/','&#9;', $s);

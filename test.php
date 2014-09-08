@@ -2,7 +2,7 @@
 date_default_timezone_set("Asia/Shanghai");
 mb_internal_encoding("UTF-8");
 require_once('html_compresser.php');
-ob_start('compress_html');
+//ob_start('compress_html');
 
 $demos = array();
 
@@ -12,13 +12,32 @@ $demos = array();
 //exit;
 
 	$urls = array(
-		['http://www.baidu.com/'],
+		array('http://www.baidu.com/'),
 		['http://www.baidu.com/s?wd=fisker'],
 		['http://www.baidu.com/s?wd=html%20compresser'],
 		['https://github.com/fisker/php-html5-compresser'],
 		//['http://www.163.com/','gbk'],
 		['http://www.taobao.com/','gbk'],
 	);
+
+$s = <<<eot
+	<a 
+        data-click="{
+		'F':'778717EA',
+		'F1':'9D73F1E4',
+		'F2':'4CA6DE6B',
+		'F3':'54E5243F',
+		'T':'1410194465',
+		'y':'1DFABDDF'
+		}"
+    	href = "//www.baidu.com/link?url=BPIG2w8q78UPekDLIk6LEpuRrArgSYgO1ZMMdU_A-XaQ6wnElZ-xmSRGgCxZK6SywtofED3q_52G6xbNk7SBxK"
+		target="_blank" 		
+	>DB文件打包器DB<em>Compressor</em>(DB<em>Compresser</em>) - 绿色软件联盟 - 《绿...</a>
+eot;
+$demos[] = array(
+	'value of attribute is in multiple lines(this code was found in baidu search result page)',
+	$s
+);
 
 
 $s = <<<eot
